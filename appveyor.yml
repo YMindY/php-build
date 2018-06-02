@@ -1,0 +1,16 @@
+image: ubuntu
+version: php-7.2-appveyor-{build}
+shallow_clone: true
+install:
+- sh: sudo chmod +x install.sh compile.sh
+- sh: sudo ./install.sh
+build_script:
+- sh: ./compile.sh -t android-aarch64 -x -s -j4 -f
+- sh: cd bin/php7/; zip -r ../../php-aarch64.zip *;cd ../.. 
+- sh: sudo rm -rf bin
+- sh: ./compile.sh -t android-armv7 -x -s -j4 -f
+- sh: cd bin/php7/; zip -r ../../php-armv7.zip *;cd ../.. 
+- sh: sudo rm -rf bin
+artifacts:
+- path: '*php-*.zip'
+- path: 'compile.log'
