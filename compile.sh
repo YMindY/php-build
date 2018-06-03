@@ -6,7 +6,7 @@ PHP_IS_BETA="no"
 ZLIB_VERSION="1.2.11"
 MBEDTLS_VERSION="2.8.0"
 GMP_VERSION="6.1.2"
-CURL_VERSION="curl-7_60_0"
+CURL_VERSION="curl-7_59_0"
 READLINE_VERSION="6.3"
 NCURSES_VERSION="6.0"
 YAML_VERSION="0.1.7"
@@ -34,26 +34,26 @@ function write_error {
 
 echo "[ScerIO] PHP compiler for Linux, MacOS and Android"
 DIR="$(pwd)"
-date > "$DIR/install.log" 2>&1
+date > "$DIR/compile.log" 2>&1
 
-uname -a >> "$DIR/install.log" 2>&1
+uname -a >> "$DIR/compile.log" 2>&1
 echo "[INFO] Checking dependencies"
 
 COMPILE_SH_DEPENDENCIES=( make autoconf automake m4 getconf gzip bzip2 bison g++ )
 ERRORS=0
 for(( i=0; i<${#COMPILE_SH_DEPENDENCIES[@]}; i++ ))
 do
-	type "${COMPILE_SH_DEPENDENCIES[$i]}" >> "$DIR/install.log" 2>&1 || { write_error "Please install \"${COMPILE_SH_DEPENDENCIES[$i]}\""; ((ERRORS++)); }
+	type "${COMPILE_SH_DEPENDENCIES[$i]}" >> "$DIR/compile.log" 2>&1 || { write_error "Please install \"${COMPILE_SH_DEPENDENCIES[$i]}\""; ((ERRORS++)); }
 done
 
-type wget >> "$DIR/install.log" 2>&1 || type curl >> "$DIR/install.log" || { echo >&2 "[ERROR] Please install \"wget\" or \"curl\""; ((ERRORS++)); }
+type wget >> "$DIR/compile.log" 2>&1 || type curl >> "$DIR/compile.log" || { echo >&2 "[ERROR] Please install \"wget\" or \"curl\""; ((ERRORS++)); }
 
 if [ "$(uname -s)" == "Darwin" ]; then
-	type glibtool >> "$DIR/install.log" 2>&1 || { echo >&2 "[ERROR] Please install GNU libtool"; ((ERRORS++)); }
+	type glibtool >> "$DIR/compile.log" 2>&1 || { echo >&2 "[ERROR] Please install GNU libtool"; ((ERRORS++)); }
 	export LIBTOOL=glibtool
 	export LIBTOOLIZE=glibtoolize
 else
-	type libtool >> "$DIR/install.log" 2>&1 || { echo >&2 "[ERROR] Please install \"libtool\" or \"libtool-bin\""; ((ERRORS++)); }
+	type libtool >> "$DIR/compile.log" 2>&1 || { echo >&2 "[ERROR] Please install \"libtool\" or \"libtool-bin\""; ((ERRORS++)); }
 	export LIBTOOL=libtool
 	export LIBTOOLIZE=libtoolize
 fi
@@ -65,11 +65,11 @@ fi
 
 #Needed to use aliases
 shopt -s expand_aliases
-type wget >> "$DIR/install.log" 2>&1
+type wget >> "$DIR/compile.log" 2>&1
 if [ $? -eq 0 ]; then
 	alias download_file="wget --no-check-certificate -q -O -"
 else
-	type curl >> "$DIR/install.log" 2>&1
+	type curl >> "$DIR/compile.log" 2>&1
 	if [ $? -eq 0 ]; then
 		alias download_file="curl --insecure --silent --show-error --location --globoff"
 	else
@@ -290,7 +290,7 @@ echo "return 0;" >> test.c
 echo "}" >> test.c
 
 
-type $CC >> "$DIR/install.log" 2>&1 || { echo >&2 "[ERROR] Please install \"$CC\""; read -p "Press [Enter] to continue..."; exit 1; }
+type $CC >> "$DIR/compile.log" 2>&1 || { echo >&2 "[ERROR] Please install \"$CC\""; read -p "Press [Enter] to continue..."; exit 1; }
 
 [ -z "$THREADS" ] && THREADS=1;
 [ -z "$march" ] && march=native;
@@ -304,19 +304,19 @@ fi
 [ -z "$CONFIGURE_FLAGS" ] && CONFIGURE_FLAGS="";
 
 if [ "$mtune" != "none" ]; then
-	$CC -march=$march -mtune=$mtune $CFLAGS -o test test.c >> "$DIR/install.log" 2>&1
+	$CC -march=$march -mtune=$mtune $CFLAGS -o test test.c >> "$DIR/compile.log" 2>&1
 	if [ $? -eq 0 ]; then
 		CFLAGS="-march=$march -mtune=$mtune -fno-gcse $CFLAGS"
 	fi
 else
-	$CC -march=$march $CFLAGS -o test test.c >> "$DIR/install.log" 2>&1
+	$CC -march=$march $CFLAGS -o test test.c >> "$DIR/compile.log" 2>&1
 	if [ $? -eq 0 ]; then
 		CFLAGS="-march=$march -fno-gcse $CFLAGS"
 	fi
 fi
 
-rm test.* >> "$DIR/install.log" 2>&1
-rm test >> "$DIR/install.log" 2>&1
+rm test.* >> "$DIR/compile.log" 2>&1
+rm test >> "$DIR/compile.log" 2>&1
 
 export CC="$CC"
 export CXX="$CXX"
@@ -326,11 +326,11 @@ export LDFLAGS="$LDFLAGS"
 export CPPFLAGS="$CPPFLAGS"
 export LIBRARY_PATH="$DIR/bin/php7/lib:$LIBRARY_PATH"
 
-rm -r -f install_data/ >> "$DIR/install.log" 2>&1
-rm -r -f bin/ >> "$DIR/install.log" 2>&1
-mkdir -m 0755 install_data >> "$DIR/install.log" 2>&1
-mkdir -m 0755 bin >> "$DIR/install.log" 2>&1
-mkdir -m 0755 bin/php7 >> "$DIR/install.log" 2>&1
+rm -r -f install_data/ >> "$DIR/compile.log" 2>&1
+rm -r -f bin/ >> "$DIR/compile.log" 2>&1
+mkdir -m 0755 install_data >> "$DIR/compile.log" 2>&1
+mkdir -m 0755 bin >> "$DIR/compile.log" 2>&1
+mkdir -m 0755 bin/php7 >> "$DIR/compile.log" 2>&1
 cd install_data
 set -e
 
@@ -338,10 +338,10 @@ set -e
 echo -n "[PHP] downloading $PHP_VERSION..."
 
 if [[ "$PHP_IS_BETA" == "yes" ]]; then
-	download_file "https://github.com/php/php-src/archive/php-$PHP_VERSION.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
+	download_file "https://github.com/php/php-src/archive/php-$PHP_VERSION.tar.gz" | tar -zx >> "$DIR/compile.log" 2>&1
 	mv php-src-php-$PHP_VERSION php
 else
-	download_file "http://php.net/get/php-$PHP_VERSION.tar.gz/from/this/mirror" | tar -zx >> "$DIR/install.log" 2>&1
+	download_file "http://php.net/get/php-$PHP_VERSION.tar.gz/from/this/mirror" | tar -zx >> "$DIR/compile.log" 2>&1
 	mv php-$PHP_VERSION php
 fi
 
@@ -355,7 +355,7 @@ if [ "$COMPILE_FANCY" == "yes" ]; then
 	fi
 	#ncurses
 	echo -n "[ncurses] downloading $NCURSES_VERSION..."
-	download_file "http://ftp.gnu.org/gnu/ncurses/ncurses-$NCURSES_VERSION.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
+	download_file "http://ftp.gnu.org/gnu/ncurses/ncurses-$NCURSES_VERSION.tar.gz" | tar -zx >> "$DIR/compile.log" 2>&1
 	mv ncurses-$NCURSES_VERSION ncurses
 	echo -n " checking..."
 	cd ncurses
@@ -368,11 +368,11 @@ if [ "$COMPILE_FANCY" == "yes" ]; then
 	--with-pthread \
 	--without-debug \
 	$EXTRA_FLAGS \
-	$CONFIGURE_FLAGS >> "$DIR/install.log" 2>&1
+	$CONFIGURE_FLAGS >> "$DIR/compile.log" 2>&1
 	echo -n " compiling..."
-	make -j $THREADS >> "$DIR/install.log" 2>&1
+	make -j $THREADS >> "$DIR/compile.log" 2>&1
 	echo -n " installing..."
-	make install >> "$DIR/install.log" 2>&1
+	make install >> "$DIR/compile.log" 2>&1
 	cd ..
 	echo " done!"
 	HAVE_NCURSES="--with-ncurses=$DIR/bin/php7"
@@ -385,7 +385,7 @@ if [ "$COMPILE_FANCY" == "yes" ]; then
 	#readline
 	set +e
 	echo -n "[readline] downloading $READLINE_VERSION..."
-	download_file "http://ftp.gnu.org/gnu/readline/readline-$READLINE_VERSION.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
+	download_file "http://ftp.gnu.org/gnu/readline/readline-$READLINE_VERSION.tar.gz" | tar -zx >> "$DIR/compile.log" 2>&1
 	mv readline-$READLINE_VERSION readline
 	echo -n " checking..."
 	cd readline
@@ -393,11 +393,11 @@ if [ "$COMPILE_FANCY" == "yes" ]; then
 	--with-curses="$DIR/bin/php7" \
 	--enable-multibyte \
 	$EXTRA_FLAGS \
-	$CONFIGURE_FLAGS >> "$DIR/install.log" 2>&1
+	$CONFIGURE_FLAGS >> "$DIR/compile.log" 2>&1
 	echo -n " compiling..."
-	if make -j $THREADS >> "$DIR/install.log" 2>&1; then
+	if make -j $THREADS >> "$DIR/compile.log" 2>&1; then
 		echo -n " installing..."
-		make install >> "$DIR/install.log" 2>&1
+		make install >> "$DIR/compile.log" 2>&1
 		HAVE_READLINE="--with-readline=$DIR/bin/php7"
 	else
 		echo -n " disabling..."
@@ -419,16 +419,16 @@ fi
 
 #zlib
 echo -n "[zlib] downloading $ZLIB_VERSION..."
-download_file "https://github.com/madler/zlib/archive/v$ZLIB_VERSION.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
+download_file "https://github.com/madler/zlib/archive/v$ZLIB_VERSION.tar.gz" | tar -zx >> "$DIR/compile.log" 2>&1
 mv zlib-$ZLIB_VERSION zlib
 echo -n " checking..."
 cd zlib
 RANLIB=$RANLIB ./configure --prefix="$DIR/bin/php7" \
-$EXTRA_FLAGS >> "$DIR/install.log" 2>&1
+$EXTRA_FLAGS >> "$DIR/compile.log" 2>&1
 echo -n " compiling..."
-make -j $THREADS >> "$DIR/install.log" 2>&1
+make -j $THREADS >> "$DIR/compile.log" 2>&1
 echo -n " installing..."
-make install >> "$DIR/install.log" 2>&1
+make install >> "$DIR/compile.log" 2>&1
 cd ..
 	if [ "$DO_STATIC" != "yes" ]; then
 		rm -f "$DIR/bin/php7/lib/libz.a"
@@ -448,7 +448,7 @@ fi
 
 #GMP
 echo -n "[GMP] downloading $GMP_VERSION..."
-download_file "https://gmplib.org/download/gmp/gmp-$GMP_VERSION.tar.bz2" | tar -jx >> "$DIR/install.log" 2>&1
+download_file "https://gmplib.org/download/gmp/gmp-$GMP_VERSION.tar.bz2" | tar -jx >> "$DIR/compile.log" 2>&1
 mv gmp-$GMP_VERSION gmp
 echo -n " checking..."
 cd gmp
@@ -457,11 +457,11 @@ $EXTRA_FLAGS \
 --disable-posix-threads \
 --enable-static \
 --disable-shared \
-$CONFIGURE_FLAGS ABI="$GMP_ABI" >> "$DIR/install.log" 2>&1
+$CONFIGURE_FLAGS ABI="$GMP_ABI" >> "$DIR/compile.log" 2>&1
 echo -n " compiling..."
-make -j $THREADS >> "$DIR/install.log" 2>&1
+make -j $THREADS >> "$DIR/compile.log" 2>&1
 echo -n " installing..."
-make install >> "$DIR/install.log" 2>&1
+make install >> "$DIR/compile.log" 2>&1
 cd ..
 echo " done!"
 
@@ -474,15 +474,15 @@ if [ "$(uname -s)" != "Darwin" ] || [ "$IS_CROSSCOMPILE" == "yes" ] || [ "$COMPI
 
 	#mbed TLS
 	echo -n "[mbed TLS] downloading $MBEDTLS_VERSION..."
-	download_file "https://tls.mbed.org/download/mbedtls-${MBEDTLS_VERSION}-gpl.tgz" | tar -zx >> "$DIR/install.log" 2>&1
+	download_file "https://tls.mbed.org/download/mbedtls-${MBEDTLS_VERSION}-gpl.tgz" | tar -zx >> "$DIR/compile.log" 2>&1
 	mv mbedtls-${MBEDTLS_VERSION} mbedtls
 	echo -n " checking..."
 	cd mbedtls
 	sed -i=".backup" 's,DESTDIR=/usr/local,,g' Makefile
 	echo -n " compiling..."
-	DESTDIR="$DIR/bin/php7" RANLIB=$RANLIB make -j $THREADS lib >> "$DIR/install.log" 2>&1
+	DESTDIR="$DIR/bin/php7" RANLIB=$RANLIB make -j $THREADS lib >> "$DIR/compile.log" 2>&1
 	echo -n " installing..."
-	DESTDIR="$DIR/bin/php7" make install >> "$DIR/install.log" 2>&1
+	DESTDIR="$DIR/bin/php7" make install >> "$DIR/compile.log" 2>&1
 	cd ..
 	echo " done!"
 fi
@@ -498,7 +498,7 @@ fi
 export PKG_CONFIG_PATH="$DIR/bin/php7/lib/pkgconfig"
 WITH_OPENSSL="--with-openssl=$DIR/bin/php7"
 echo -n "[OpenSSL] downloading $OPENSSL_VERSION..."
-download_file "http://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
+download_file "http://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz" | tar -zx >> "$DIR/compile.log" 2>&1
 mv openssl-$OPENSSL_VERSION openssl
 
 echo -n " checking..."
@@ -510,14 +510,16 @@ no-asm \
 no-hw \
 no-shared \
 no-threads \
-no-engine >> "$DIR/install.log" 2>&1
+no-engine >> "$DIR/compile.log" 2>&1
 
 echo -n " compiling..."
-make -j $THREADS >> "$DIR/install.log" 2>&1
+make -j $THREADS >> "$DIR/compile.log" 2>&1
 echo -n " installing..."
-make install >> "$DIR/install.log" 2>&1
+make install >> "$DIR/compile.log" 2>&1
 cd ..
 echo " done!"
+
+
 
 if [ "$(uname -s)" == "Darwin" ] && [ "$IS_CROSSCOMPILE" != "yes" ] && [ "$COMPILE_CURL" != "yes" ]; then
    HAVE_CURL="shared,/usr"
@@ -530,11 +532,11 @@ else
 
 	#curl
 	echo -n "[cURL] downloading $CURL_VERSION..."
-	download_file "https://github.com/curl/curl/archive/$CURL_VERSION.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
+	download_file "https://github.com/curl/curl/archive/$CURL_VERSION.tar.gz" | tar -zx >> "$DIR/compile.log" 2>&1
 	mv curl-$CURL_VERSION curl
 	echo -n " checking..."
 	cd curl
-	./buildconf --force
+	./buildconf --force >> "$DIR/compile.log" 2>&1
 	RANLIB=$RANLIB ./configure --disable-dependency-tracking \
 	--enable-ipv6 \
 	--enable-optimize \
@@ -559,11 +561,11 @@ else
 	--enable-threaded-resolver \
 	--prefix="$DIR/bin/php7" \
 	$EXTRA_FLAGS \
-	$CONFIGURE_FLAGS
+	$CONFIGURE_FLAGS >> "$DIR/compile.log" 2>&1
 	echo -n " compiling..."
-	make -j $THREADS >> "$DIR/install.log" 2>&1
+	make -j $THREADS >> "$DIR/compile.log" 2>&1
 	echo -n " installing..."
-	make install >> "$DIR/install.log" 2>&1
+	make install >> "$DIR/compile.log" 2>&1
 	cd ..
 	echo " done!"
 	HAVE_CURL="$DIR/bin/php7"
@@ -577,35 +579,35 @@ else
 fi
 #YAML
 echo -n "[YAML] downloading $YAML_VERSION..."
-download_file "https://github.com/yaml/libyaml/archive/$YAML_VERSION.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
+download_file "https://github.com/yaml/libyaml/archive/$YAML_VERSION.tar.gz" | tar -zx >> "$DIR/compile.log" 2>&1
 mv libyaml-$YAML_VERSION yaml
 cd yaml
-./bootstrap >> "$DIR/install.log" 2>&1
+./bootstrap >> "$DIR/compile.log" 2>&1
 
 echo -n " checking..."
 
 RANLIB=$RANLIB ./configure \
 --prefix="$DIR/bin/php7" \
 $EXTRA_FLAGS \
-$CONFIGURE_FLAGS >> "$DIR/install.log" 2>&1
+$CONFIGURE_FLAGS >> "$DIR/compile.log" 2>&1
 sed -i=".backup" 's/ tests win32/ win32/g' Makefile
 echo -n " compiling..."
-make -j $THREADS all >> "$DIR/install.log" 2>&1
+make -j $THREADS all >> "$DIR/compile.log" 2>&1
 echo -n " installing..."
-make install >> "$DIR/install.log" 2>&1
+make install >> "$DIR/compile.log" 2>&1
 cd ..
 echo " done!"
 
 if [ "$COMPILE_LEVELDB" == "yes" ]; then
 	#LevelDB
 	echo -n "[LevelDB] downloading $LEVELDB_VERSION..."
-	download_file "https://github.com/pmmp/leveldb-mcpe/archive/$LEVELDB_VERSION.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
-	#download_file "https://github.com/Mojang/leveldb-mcpe/archive/$LEVELDB_VERSION.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
+	download_file "https://github.com/pmmp/leveldb-mcpe/archive/$LEVELDB_VERSION.tar.gz" | tar -zx >> "$DIR/compile.log" 2>&1
+	#download_file "https://github.com/Mojang/leveldb-mcpe/archive/$LEVELDB_VERSION.tar.gz" | tar -zx >> "$DIR/compile.log" 2>&1
 	mv leveldb-mcpe-$LEVELDB_VERSION leveldb
 	echo -n " checking..."
 	cd leveldb
 	echo -n " compiling..."
-	INSTALL_PATH="$DIR/bin/php7/lib" CFLAGS="$CFLAGS -I$DIR/bin/php7/include" CXXFLAGS="$CXXFLAGS -I$DIR/bin/php7/include" LDFLAGS="$LDFLAGS -L$DIR/bin/php7/lib" make -j $THREADS >> "$DIR/install.log" 2>&1
+	INSTALL_PATH="$DIR/bin/php7/lib" CFLAGS="$CFLAGS -I$DIR/bin/php7/include" CXXFLAGS="$CXXFLAGS -I$DIR/bin/php7/include" LDFLAGS="$LDFLAGS -L$DIR/bin/php7/lib" make -j $THREADS >> "$DIR/compile.log" 2>&1
 	echo -n " installing..."
 	if [ "$DO_STATIC" == "yes" ]; then
 		cp out-static/lib*.a "$DIR/bin/php7/lib/"
@@ -626,18 +628,18 @@ fi
 if [ "$COMPILE_GD" == "yes" ]; then
 	#libpng
 	echo -n "[libpng] downloading $LIBPNG_VERSION..."
-	download_file "https://sourceforge.net/projects/libpng/files/libpng16/$LIBPNG_VERSION/libpng-$LIBPNG_VERSION.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
+	download_file "https://sourceforge.net/projects/libpng/files/libpng16/$LIBPNG_VERSION/libpng-$LIBPNG_VERSION.tar.gz" | tar -zx >> "$DIR/compile.log" 2>&1
 	mv libpng-$LIBPNG_VERSION libpng
 	echo -n " checking..."
 	cd libpng
 	LDFLAGS="$LDFLAGS -L${DIR}/bin/php7/lib" CPPFLAGS="$CPPFLAGS -I${DIR}/bin/php7/include" RANLIB=$RANLIB ./configure \
 	--prefix="$DIR/bin/php7" \
 	$EXTRA_FLAGS \
-	$CONFIGURE_FLAGS >> "$DIR/install.log" 2>&1
+	$CONFIGURE_FLAGS >> "$DIR/compile.log" 2>&1
 	echo -n " compiling..."
-	make -j $THREADS >> "$DIR/install.log" 2>&1
+	make -j $THREADS >> "$DIR/compile.log" 2>&1
 	echo -n " installing..."
-	make install >> "$DIR/install.log" 2>&1
+	make install >> "$DIR/compile.log" 2>&1
 	cd ..
 	echo " done!"
 	HAS_GD="--with-gd"
@@ -649,7 +651,7 @@ fi
 
 #libxml2
 #echo -n "[libxml2] downloading $LIBXML_VERSION..."
-#download_file "ftp://xmlsoft.org/libxml2/libxml2-$LIBXML_VERSION.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
+#download_file "ftp://xmlsoft.org/libxml2/libxml2-$LIBXML_VERSION.tar.gz" | tar -zx >> "$DIR/compile.log" 2>&1
 #mv libxml2-$LIBXML_VERSION libxml2
 #echo -n " checking..."
 #cd libxml2
@@ -658,11 +660,11 @@ fi
 #--with-libz="$DIR/bin/php7" \
 #--prefix="$DIR/bin/php7" \
 #$EXTRA_FLAGS \
-#$CONFIGURE_FLAGS >> "$DIR/install.log" 2>&1
+#$CONFIGURE_FLAGS >> "$DIR/compile.log" 2>&1
 #echo -n " compiling..."
-#make -j $THREADS >> "$DIR/install.log" 2>&1
+#make -j $THREADS >> "$DIR/compile.log" 2>&1
 #echo -n " installing..."
-#make install >> "$DIR/install.log" 2>&1
+#make install >> "$DIR/compile.log" 2>&1
 #cd ..
 #echo " done!"
 
@@ -679,7 +681,7 @@ fi
 # 4: Name of extracted directory to move
 function get_extension_tar_gz {
 	echo -n "  $1: downloading $2..."
-	download_file "$3" | tar -zx >> "$DIR/install.log" 2>&1
+	download_file "$3" | tar -zx >> "$DIR/compile.log" 2>&1
 	mv "$4" "$DIR/install_data/php/ext/$1"
 	echo " done!"
 }
@@ -751,11 +753,11 @@ else
 fi
 echo -n " checking..."
 cd php
-rm -f ./aclocal.m4 >> "$DIR/install.log" 2>&1
-rm -rf ./autom4te.cache/ >> "$DIR/install.log" 2>&1
-rm -f ./configure >> "$DIR/install.log" 2>&1
+rm -f ./aclocal.m4 >> "$DIR/compile.log" 2>&1
+rm -rf ./autom4te.cache/ >> "$DIR/compile.log" 2>&1
+rm -f ./configure >> "$DIR/compile.log" 2>&1
 
-./buildconf --force >> "$DIR/install.log" 2>&1
+./buildconf --force >> "$DIR/compile.log" 2>&1
 
 #hack for curl with pkg-config (ext/curl doesn't give --static to pkg-config on static builds)
 if [ "$DO_STATIC" == "yes" ]; then
@@ -795,8 +797,8 @@ if [ "$IS_WINDOWS" != "yes" ]; then
 	HAVE_PCNTL="--enable-pcntl"
 else
 	HAVE_PCNTL="--disable-pcntl"
-	cp -f ./win32/build/config.* ./main >> "$DIR/install.log" 2>&1
-	sed 's:@PREFIX@:$DIR/bin/php7:' ./main/config.w32.h.in > ./wmain/config.w32.h 2>> "$DIR/install.log"
+	cp -f ./win32/build/config.* ./main >> "$DIR/compile.log" 2>&1
+	sed 's:@PREFIX@:$DIR/bin/php7:' ./main/config.w32.h.in > ./wmain/config.w32.h 2>> "$DIR/compile.log"
 fi
 
 if [[ "$(uname -s)" == "Darwin" ]] && [[ "$IS_CROSSCOMPILE" != "yes" ]]; then
@@ -860,7 +862,7 @@ $HAVE_MYSQLI \
 --enable-opcache=no \
 --enable-igbinary \
 --enable-ds \
-$CONFIGURE_FLAGS >> "$DIR/install.log" 2>&1
+$CONFIGURE_FLAGS >> "$DIR/compile.log" 2>&1
 echo -n " compiling..."
 if [ "$COMPILE_FOR_ANDROID" == "yes" ]; then
 	sed -i=".backup" 's/-export-dynamic/-all-static/g' Makefile
@@ -872,13 +874,13 @@ if [[ "$COMPILE_LEVELDB" == "yes" ]] && [[ "$DO_STATIC" == "yes" ]]; then
 	sed -i=".backup" 's/--mode=link $(CC)/--mode=link $(CXX)/g' Makefile
 fi
 
-make -j $THREADS >> "$DIR/install.log" 2>&1
+make -j $THREADS >> "$DIR/compile.log" 2>&1
 echo -n " installing..."
-make install >> "$DIR/install.log" 2>&1
+make install >> "$DIR/compile.log" 2>&1
 
 if [[ "$(uname -s)" == "Darwin" ]] && [[ "$IS_CROSSCOMPILE" != "yes" ]]; then
 	set +e
-	install_name_tool -delete_rpath "$DIR/bin/php7/lib" "$DIR/bin/php7/bin/php" >> "$DIR/install.log" 2>&1
+	install_name_tool -delete_rpath "$DIR/bin/php7/lib" "$DIR/bin/php7/bin/php" >> "$DIR/compile.log" 2>&1
 
 	IFS=$'\n' OTOOL_OUTPUT=($(otool -L "$DIR/bin/php7/bin/php"))
 
@@ -887,15 +889,15 @@ if [[ "$(uname -s)" == "Darwin" ]] && [[ "$IS_CROSSCOMPILE" != "yes" ]]; then
 		CURRENT_DYLIB_NAME=$(echo ${OTOOL_OUTPUT[$i]} | sed 's# (compatibility version .*##' | xargs)
 		if [[ $CURRENT_DYLIB_NAME == "$DIR/bin/php7/lib/"*".dylib"* ]]; then
 			NEW_DYLIB_NAME=$(echo "$CURRENT_DYLIB_NAME" | sed "s{$DIR/bin/php7/lib{@loader_path/../lib{" | xargs)
-			install_name_tool -change "$CURRENT_DYLIB_NAME" "$NEW_DYLIB_NAME" "$DIR/bin/php7/bin/php" >> "$DIR/install.log" 2>&1
+			install_name_tool -change "$CURRENT_DYLIB_NAME" "$NEW_DYLIB_NAME" "$DIR/bin/php7/bin/php" >> "$DIR/compile.log" 2>&1
 		fi
 	done
 
-	install_name_tool -change "$DIR/bin/php7/lib/libssl.1.0.0.dylib" "@loader_path/../lib/libssl.1.0.0.dylib" "$DIR/bin/php7/lib/libcurl.4.dylib" >> "$DIR/install.log" 2>&1
-	install_name_tool -change "$DIR/bin/php7/lib/libcrypto.1.0.0.dylib" "@loader_path/../lib/libcrypto.1.0.0.dylib" "$DIR/bin/php7/lib/libcurl.4.dylib" >> "$DIR/install.log" 2>&1
-	chmod 0777 "$DIR/bin/php7/lib/libssl.1.0.0.dylib" >> "$DIR/install.log" 2>&1
-	install_name_tool -change "$DIR/bin/php7/lib/libcrypto.1.0.0.dylib" "@loader_path/libcrypto.1.0.0.dylib" "$DIR/bin/php7/lib/libssl.1.0.0.dylib" >> "$DIR/install.log" 2>&1
-	chmod 0755 "$DIR/bin/php7/lib/libssl.1.0.0.dylib" >> "$DIR/install.log" 2>&1
+	install_name_tool -change "$DIR/bin/php7/lib/libssl.1.0.0.dylib" "@loader_path/../lib/libssl.1.0.0.dylib" "$DIR/bin/php7/lib/libcurl.4.dylib" >> "$DIR/compile.log" 2>&1
+	install_name_tool -change "$DIR/bin/php7/lib/libcrypto.1.0.0.dylib" "@loader_path/../lib/libcrypto.1.0.0.dylib" "$DIR/bin/php7/lib/libcurl.4.dylib" >> "$DIR/compile.log" 2>&1
+	chmod 0777 "$DIR/bin/php7/lib/libssl.1.0.0.dylib" >> "$DIR/compile.log" 2>&1
+	install_name_tool -change "$DIR/bin/php7/lib/libcrypto.1.0.0.dylib" "@loader_path/libcrypto.1.0.0.dylib" "$DIR/bin/php7/lib/libssl.1.0.0.dylib" >> "$DIR/compile.log" 2>&1
+	chmod 0755 "$DIR/bin/php7/lib/libssl.1.0.0.dylib" >> "$DIR/compile.log" 2>&1
 	set -e
 fi
 
@@ -938,12 +940,12 @@ echo " done!"
 if [[ "$DO_STATIC" != "yes" ]] && [[ "$COMPILE_DEBUG" == "yes" ]]; then
 	echo -n "[xdebug] checking..."
 	cd "$DIR/install_data/php/ext/xdebug"
-	$DIR/bin/php7/bin/phpize >> "$DIR/install.log" 2>&1
-	./configure --with-php-config="$DIR/bin/php7/bin/php-config" >> "$DIR/install.log" 2>&1
+	$DIR/bin/php7/bin/phpize >> "$DIR/compile.log" 2>&1
+	./configure --with-php-config="$DIR/bin/php7/bin/php-config" >> "$DIR/compile.log" 2>&1
 	echo -n " compiling..."
-	make -j4 >> "$DIR/install.log" 2>&1
+	make -j4 >> "$DIR/compile.log" 2>&1
 	echo -n " installing..."
-	make install >> "$DIR/install.log" 2>&1
+	make install >> "$DIR/compile.log" 2>&1
 	echo "zend_extension=xdebug.so" >> "$DIR/bin/php7/bin/php.ini"
 	echo " done!"
 fi
@@ -951,17 +953,49 @@ fi
 cd "$DIR"
 if [ "$DO_CLEANUP" == "yes" ]; then
 	echo -n "[INFO] Cleaning up..."
-	rm -r -f install_data/ >> "$DIR/install.log" 2>&1
-	rm -f bin/php7/bin/curl* >> "$DIR/install.log" 2>&1
-	rm -f bin/php7/bin/curl-config* >> "$DIR/install.log" 2>&1
-	rm -f bin/php7/bin/c_rehash* >> "$DIR/install.log" 2>&1
-	rm -f bin/php7/bin/openssl* >> "$DIR/install.log" 2>&1
-	rm -r -f bin/php7/man >> "$DIR/install.log" 2>&1
-	rm -r -f bin/php7/php >> "$DIR/install.log" 2>&1
-	rm -r -f bin/php7/misc >> "$DIR/install.log" 2>&1
+	rm -r -f install_data/ >> "$DIR/compile.log" 2>&1
+	rm -f bin/php7/bin/curl* >> "$DIR/compile.log" 2>&1
+	rm -f bin/php7/bin/curl-config* >> "$DIR/compile.log" 2>&1
+	rm -f bin/php7/bin/c_rehash* >> "$DIR/compile.log" 2>&1
+	rm -f bin/php7/bin/openssl* >> "$DIR/compile.log" 2>&1
+	rm -r -f bin/php7/man >> "$DIR/compile.log" 2>&1
+	rm -r -f bin/php7/php >> "$DIR/compile.log" 2>&1
+	rm -r -f bin/php7/misc >> "$DIR/compile.log" 2>&1
 	echo " done!"
 fi
 
-date >> "$DIR/install.log" 2>&1
+
+#Composer
+if [ "$IS_CROSSCOMPILE" != "yes" ]; then
+	echo -n "[Composer] downloading..."
+	EXPECTED_SIGNATURE=$(download_file https://composer.github.io/installer.sig)
+	download_file https://getcomposer.org/installer > composer-setup.php
+	ACTUAL_SIGNATURE=$($DIR/bin/php7/bin/php -r "echo hash_file('SHA384', 'composer-setup.php');")
+
+	if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]
+	then
+		>&2 echo ' ERROR: Invalid Composer installer signature'
+		echo 'ERROR: Invalid Composer installer signature' >> "$DIR/compile.log" 2>&1
+		rm composer-setup.php
+		exit 1
+	fi
+
+	echo -n " installing..."
+	$DIR/bin/php7/bin/php composer-setup.php --install-dir=bin >> "$DIR/compile.log" 2>&1
+	rm composer-setup.php
+
+	echo -n " generating bin/composer script..."
+	echo '#!/bin/bash' > $DIR/bin/composer
+	echo 'DIR="$(cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"' >> $DIR/bin/composer
+	echo '$DIR/php7/bin/php $DIR/composer.phar $@' >> $DIR/bin/composer
+	chmod +x $DIR/bin/composer
+
+	echo " done!"
+else
+	echo "WARNING: Can't get Composer for cross-compile builds, you will need to install Composer manually on the target machine."
+fi
+
+
+date >> "$DIR/compile.log" 2>&1
 echo "[ScerIO] You should start the server now using \"./start.sh.\""
-echo "[ScerIO] If it doesn't work, please send the \"install.log\" file to the Bug Tracker."
+echo "[ScerIO] If it doesn't work, please send the \"compile.log\" file to the Bug Tracker."
