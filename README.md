@@ -1,6 +1,6 @@
 # Custom PHP build scripts
 
-[AppVeyor build job](https://ci.appveyor.com/project/ScerIO/php-build-scripts/build/artifacts)
+[AppVeyor build job](https://ci.appveyor.com/project/ScerIO/php-build/build/artifacts)
 
 ## compile.sh
 
