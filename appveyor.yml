@@ -22,6 +22,9 @@ build_script:
 - sh: sudo su -c "./compile.sh -t android-armv7 -x -s -j4 -f"
 - sh: cd bin/php7/bin; zip -r ../../../php-armv7.zip php php.ini  > /dev/null;cd ../../..
 - sh: sudo rm -rf bin
+
+- sh: sudo su -c "./compile.sh -t linux64 -l -j4 -c -f x86_64"
+- sh: cd bin/php7/bin; zip -r ../../../php-linux-x86_64.zip php php.ini  > /dev/null;cd ../../..
+- sh: sudo rm -rf bin
 artifacts:
 - path: '*php-*.zip'
-- path: 'compile.log'

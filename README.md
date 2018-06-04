@@ -43,3 +43,11 @@ Bash script used to compile PHP on MacOS and Linux platforms. Make sure you have
 ### Common pitfalls
 - If used, the `-t` option (target) MUST be specified BEFORE the `-f` option (optimizations)
 - Avoid using the script in directory trees containing spaces. Some libraries don't like trying to be built in directory trees containing spaces, e.g. `/home/user/my folder/pocketmine-mp/` might experience problems.
+
+
+## Rest api
+
+Api for getting last links to download PHP binaries
+
+- [Source & docs](https://github.com/ScerIO/php-api)
+- [Api](https://php.scer.io/)
