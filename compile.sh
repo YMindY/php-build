@@ -4,15 +4,16 @@
 PHP_IS_BETA="no"
 
 ZLIB_VERSION="1.2.11"
-MBEDTLS_VERSION="2.8.0"
+MBEDTLS_VERSION="2.12.0"
 GMP_VERSION="6.1.2"
-CURL_VERSION="curl-7_60_0"
+CURL_VERSION="curl-7_61_0"
 READLINE_VERSION="6.3"
 NCURSES_VERSION="6.0"
 YAML_VERSION="0.1.7"
 LEVELDB_VERSION="8758c296910988f13d737a44696c01b5000f227c"
 LIBXML_VERSION="2.9.1"
 LIBPNG_VERSION="1.6.34"
+LIBJPEG_VERSION="9c"
 OPENSSL_VERSION="1.1.0h"
 
 EXT_NCURSES_VERSION="1.0.2"
@@ -23,6 +24,7 @@ EXT_SCERIO_CHUNKUTILS_VERSION="master"
 EXT_XDEBUG_VERSION="2.6.0"
 EXT_IGBINARY_VERSION="4b61818d361cf2c51472956b4a6e23be363d681a"
 EXT_DS_VERSION="f3989cbfca634256e29f155d6fff77e0e50f5ab8"
+EXT_CRYPTO_VERSION="42b50c105cc24dbe3db7638ab8c2d9508f50ebb6"
 
 function write_out {
 	echo "[$1] $2"
@@ -642,6 +644,22 @@ if [ "$COMPILE_GD" == "yes" ]; then
 	make install >> "$DIR/compile.log" 2>&1
 	cd ..
 	echo " done!"
+	#libjpeg
+	echo -n "[libjpeg] downloading $LIBJPEG_VERSION..."
+	download_file "http://ijg.org/files/jpegsrc.v$LIBJPEG_VERSION.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
+	mv jpeg-$LIBJPEG_VERSION libjpeg
+	echo -n " checking..."
+	cd libjpeg
+	LDFLAGS="$LDFLAGS -L${DIR}/bin/php7/lib" CPPFLAGS="$CPPFLAGS -I${DIR}/bin/php7/include" RANLIB=$RANLIB ./configure \
+	--prefix="$DIR/bin/php7" \
+	$EXTRA_FLAGS \
+	$CONFIGURE_FLAGS >> "$DIR/install.log" 2>&1
+	echo -n " compiling..."
+	make -j $THREADS >> "$DIR/install.log" 2>&1
+	echo -n " installing..."
+	make install >> "$DIR/install.log" 2>&1
+	cd ..
+	echo " done!"
 	HAS_GD="--with-gd"
 	HAS_LIBPNG="--with-png-dir=${DIR}/bin/php7"
 else
@@ -726,6 +744,14 @@ get_github_extension "yaml" "$EXT_YAML_VERSION" "php" "pecl-file_formats-yaml"
 get_github_extension "igbinary" "$EXT_IGBINARY_VERSION" "igbinary" "igbinary"
 
 get_github_extension "ds" "$EXT_DS_VERSION" "php-ds" "extension"
+
+echo -n "  crypto: downloading $EXT_CRYPTO_VERSION..."
+git clone https://github.com/bukka/php-crypto.git "$DIR/install_data/php/ext/crypto" >> "$DIR/install.log" 2>&1
+cd "$DIR/install_data/php/ext/crypto"
+git checkout "$EXT_CRYPTO_VERSION" >> "$DIR/install.log" 2>&1
+git submodule update --init --recursive >> "$DIR/install.log" 2>&1
+cd "$DIR/install_data"
+echo " done!"
 
 if [ "$COMPILE_LEVELDB" == "yes" ]; then
 	#PHP LevelDB
@@ -965,37 +991,5 @@ if [ "$DO_CLEANUP" == "yes" ]; then
 fi
 
 
-#Composer
-if [ "$IS_CROSSCOMPILE" != "yes" ]; then
-	echo -n "[Composer] downloading..."
-	EXPECTED_SIGNATURE=$(download_file https://composer.github.io/installer.sig)
-	download_file https://getcomposer.org/installer > composer-setup.php
-	ACTUAL_SIGNATURE=$($DIR/bin/php7/bin/php -r "echo hash_file('SHA384', 'composer-setup.php');")
-
-	if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]
-	then
-		>&2 echo ' ERROR: Invalid Composer installer signature'
-		echo 'ERROR: Invalid Composer installer signature' >> "$DIR/compile.log" 2>&1
-		rm composer-setup.php
-		exit 1
-	fi
-
-	echo -n " installing..."
-	$DIR/bin/php7/bin/php composer-setup.php --install-dir=bin >> "$DIR/compile.log" 2>&1
-	rm composer-setup.php
-
-	echo -n " generating bin/composer script..."
-	echo '#!/bin/bash' > $DIR/bin/composer
-	echo 'DIR="$(cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"' >> $DIR/bin/composer
-	echo '$DIR/php7/bin/php $DIR/composer.phar $@' >> $DIR/bin/composer
-	chmod +x $DIR/bin/composer
-
-	echo " done!"
-else
-	echo "WARNING: Can't get Composer for cross-compile builds, you will need to install Composer manually on the target machine."
-fi
-
-
 date >> "$DIR/compile.log" 2>&1
-echo "[ScerIO] You should start the server now using \"./start.sh.\""
 echo "[ScerIO] If it doesn't work, please send the \"compile.log\" file to the Bug Tracker."
